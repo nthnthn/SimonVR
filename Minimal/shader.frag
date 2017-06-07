@@ -1,12 +1,10 @@
 #version 330 core
+in vec3 TexCoords;
+layout (location = 0) out vec3 color;
 
-in vec2 TexCoords;
-
-out vec4 color;
-
-uniform sampler2D texture_diffuse1;
+uniform samplerCube skybox;
 
 void main()
 {    
-    color = vec4(0.5f, 0.5f*TexCoords.y, 0.1f*TexCoords.x, 0.0f);
+    color = vec3(texture(skybox, TexCoords));
 }

@@ -544,6 +544,14 @@ protected:
 	}
 
 	void draw() final override {
+
+		// Hand Positions and Orientations
+		double displayMidpointSeconds = ovr_GetPredictedDisplayTime(_session, frame);
+		ovrTrackingState trackState = ovr_GetTrackingState(_session, displayMidpointSeconds, ovrTrue);
+		ovrPosef leftHandPose = trackState.HandPoses[ovrHand_Left].ThePose;
+		ovrPosef rightHandPose = trackState.HandPoses[ovrHand_Right].ThePose;
+
+
 		ovrPosef eyePoses[2];
 		ovr_GetEyePoses(_session, frame, true, _viewScaleDesc.HmdToEyeOffset, eyePoses, &_sceneLayer.SensorSampleTime);
 
@@ -566,7 +574,7 @@ protected:
 			const auto& vp = _sceneLayer.Viewport[eye];
 			glViewport(vp.Pos.x, vp.Pos.y, vp.Size.w, vp.Size.h);
 			_sceneLayer.RenderPose[eye] = eyePoses[eye];
-			renderScene(_eyeProjections[eye], ovr::toGlm(eyePoses[eye]));
+			renderScene(_eyeProjections[eye], ovr::toGlm(eyePoses[eye]), ovr::toGlm(leftHandPose), ovr::toGlm(rightHandPose));
 		});
 		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
@@ -582,7 +590,7 @@ protected:
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 	}
 
-	virtual void renderScene(const glm::mat4 & projection, const glm::mat4 & headPose) = 0;
+	virtual void renderScene(const glm::mat4 & projection, const glm::mat4 & headPose, mat4 left, mat4 right) = 0;
 	virtual void updateTriggers(bool leftHandTriggerPressed, bool rightHandTriggerPressed) = 0;
 };
 
@@ -616,6 +624,9 @@ namespace Attribute {
 #include <vector>
 #include "Model.h"
 #include "Line.h"
+#include "Skybox.h"
+#include "Player.h"
+#include "Client.h"
 
 #define LEFT 0
 #define RIGHT 1
@@ -633,11 +644,14 @@ static float leftOrientX;
 static float leftOrientY;
 static float leftOrientZ;
 
+static int playerCount = 1;
+
 struct Co2Scene : Model {
 private:
-	Model * factory;
-	GLuint shader, o2shader;
+	GLuint shader;
 	Model * cube;
+	Client *client;
+	vector<Player*> *players;
 
 public:
 	double currentTime;
@@ -650,12 +664,24 @@ public:
 		shader = LoadShaders("../Minimal/shader.vert", "../Minimal/shader.frag");
 		lineLeft = new Line();
 		lineRight = new Line();
+		client = new Client();
+		players = &(client->players);
 	}
-	void render(const mat4 & projection, const mat4 & modelview) {
-		lineLeft->update(leftX, leftY, leftZ, leftOrientX, leftOrientY, leftOrientZ);
-		lineRight->update(rightX, rightY, rightZ, rightOrientX, rightOrientY, rightOrientZ);
-		lineLeft->draw(projection, modelview);
-		lineRight->draw(projection, modelview);
+
+	void render(const mat4 & projection, const mat4 & modelview, mat4 left, mat4 right) {
+
+
+		//lineLeft->update(leftX, leftY, leftZ, leftOrientX, leftOrientY, leftOrientZ);
+		//lineRight->update(rightX, rightY, rightZ, rightOrientX, rightOrientY, rightOrientZ);
+		//lineLeft->draw(projection, modelview);
+		//lineRight->draw(projection, modelview);
+
+		client->updateMe(modelview, left, right);
+		
+		players = &(client->players);
+		for (std::vector<Player*>::iterator it = players->begin(); it < players->end(); it++) {
+			(*it)->draw(shader, projection, modelview, client->getClientId());
+		}
 
 		currentTime = glfwGetTime();
 		deltaTime = currentTime - prevTime;
@@ -670,11 +696,6 @@ class CO2App : public RiftApp {
 
 public:
 	CO2App() { }
-
-	ovrPosef leftHandPose;
-	ovrPosef rightHandPose;
-	ovrTrackingState trackState;
-	double displayMidpointSeconds;
 	//Line * line;
 protected:
 	bool rightHandTriggerPressed, leftHandTriggerPressed;
@@ -707,25 +728,9 @@ protected:
 		//co2Scene.reset();
 	}
 
-	void renderScene(const glm::mat4 & projection, const glm::mat4 & headPose) override {
-		displayMidpointSeconds = ovr_GetPredictedDisplayTime(_session, frame);
-		trackState = ovr_GetTrackingState(_session, displayMidpointSeconds, ovrTrue);
-		leftHandPose = trackState.HandPoses[ovrHand_Left].ThePose;
-		rightHandPose = trackState.HandPoses[ovrHand_Right].ThePose;
-
-		co2Scene->render(projection, glm::inverse(headPose));
-		leftX = leftHandPose.Position.x;
-		leftY = leftHandPose.Position.y;
-		leftZ = leftHandPose.Position.z;
-		leftOrientX = leftHandPose.Orientation.y * 4.0f;
-		leftOrientY = leftHandPose.Orientation.x * -4.0f;
-		leftOrientZ = (leftHandPose.Orientation.w - leftHandPose.Orientation.z) * 4.0f;
-		rightX = rightHandPose.Position.x;
-		rightY = rightHandPose.Position.y;
-		rightZ = rightHandPose.Position.z;
-		rightOrientX = rightHandPose.Orientation.y * 4.0f;
-		rightOrientY = rightHandPose.Orientation.x * -4.0f;
-		rightOrientZ = (rightHandPose.Orientation.w - rightHandPose.Orientation.z) * 4.0f;
+	void renderScene(const glm::mat4 & projection, const glm::mat4 & headPose, mat4 left, mat4 right) override {
+		co2Scene->render(projection, glm::inverse(headPose), left, right);
+		
 	}
 };
 

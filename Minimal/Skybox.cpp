@@ -40,7 +40,7 @@ SkyBox::SkyBox(int state)
 
 		//left, right, up, down, back, front = "../Minimal/Textures/vr_test_pattern.ppm";
 		for (int i = 0; i < 6; i++) {
-			faces.push_back("../Minimal/Assets/Textures/Red.ppm");
+			faces.push_back("../Minimal/Assets/Textures/Cardboard.ppm");
 		}
 		translate(glm::vec3(0.0f, 0.0f, -0.4f));
 	

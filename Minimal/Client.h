@@ -22,6 +22,7 @@ private:
 	int clientID;
 	void addPlayer(Player * newPlayer);	
 	Player* player;
+	glm::mat4 localPosition = glm::mat4(0.0f);
 };
 
 #endif

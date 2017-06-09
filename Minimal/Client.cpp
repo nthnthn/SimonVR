@@ -4,6 +4,7 @@ Client::Client() {
 	clientID = 0;
 	player = new Player(clientID);
 	addPlayer(player);
+	localPosition[3] = {0.0f, 0.0f, 0.0f, 0.0f};
 }
 
 Client::~Client() {}

@@ -652,6 +652,7 @@ private:
 	Model * cube;
 	Client *client;
 	vector<Player*> *players;
+	Model * table;
 
 public:
 	double currentTime;
@@ -664,8 +665,10 @@ public:
 		shader = LoadShaders("../Minimal/shader.vert", "../Minimal/shader.frag");
 		lineLeft = new Line();
 		lineRight = new Line();
-		client = new Client();
-		players = &(client->players);
+		//client = new Client();
+		//players = &(client->players);
+		table = new Model("../Minimal/Assets/Marble_Desk_obj/marble_desk.obj");
+		table->scale(0.01f);
 	}
 
 	void render(const mat4 & projection, const mat4 & modelview, mat4 left, mat4 right) {
@@ -676,12 +679,13 @@ public:
 		//lineLeft->draw(projection, modelview);
 		//lineRight->draw(projection, modelview);
 
-		client->updateMe(modelview, left, right);
+		//client->updateMe(modelview, left, right);
 		
-		players = &(client->players);
-		for (std::vector<Player*>::iterator it = players->begin(); it < players->end(); it++) {
-			(*it)->draw(shader, projection, modelview, client->getClientId());
-		}
+		//players = &(client->players);
+		//for (std::vector<Player*>::iterator it = players->begin(); it < players->end(); it++) {
+		//	(*it)->draw(shader, projection, modelview, client->getClientId());
+		//}
+		table->Draw(shader, projection, modelview);
 
 		currentTime = glfwGetTime();
 		deltaTime = currentTime - prevTime;

@@ -630,6 +630,7 @@ namespace Attribute {
 
 #define LEFT 0
 #define RIGHT 1
+#define POS_COLUMN 3
 
 static float leftX;
 static float leftY;
@@ -649,17 +650,28 @@ static int playerCount = 1;
 struct Co2Scene : Model {
 private:
 	GLuint skyboxShader, shader;
+	SkyBox *skybox;
 	Model * cube;
 	Client *client;
 	vector<Player*> *players;
 	Model * table;
+	Model *gazebo;
+	Model *red, *green, *blue, *yellow;
+	float offset = 0.0f;
+	float offsetSum;
+	float buttonHeight = -0.8f;
+	int buttonNumber = 0;
+	bool pressed = false;
+	bool goingDown = false;
+	const float DISTANCE_FROM_BUTTON = 0.2f;
+	glm::vec4 buttonCenterOffset;
 
 public:
-	double currentTime;
-	double deltaTime;
-	double prevTime;
+	double currentTime = 0.0;
+	double prevTime = 0.0;
 	Line * lineLeft;
 	Line * lineRight;
+	
 
 	Co2Scene() {
 		shader = LoadShaders("../Minimal/shader.vert", "../Minimal/shader.frag");
@@ -668,14 +680,48 @@ public:
 		lineRight = new Line();
 		client = new Client();
 		players = &(client->players);
-		table = new Model("../Minimal/Assets/button_OBJ.obj");
-		table->scale(glm::vec3(0.01f, .03f, 0.01f));
-		table->translate(glm::vec3(0.0f, -1.1f, -1.0f));
-		table->rotate(glm::vec3(0.0f, 1.0f, 0.0f), 90.0f);
+		offsetSum = 0.0f;
+		buttonCenterOffset = glm::vec4(0.09f, 0.0f, -0.08f, 0.0f);
+
+		// Load and move the table
+		table = new Model("../Minimal/Assets/table/table.obj");
+		table->scale(.40f);
+		table->scale(glm::vec3(0.7f, 1.0f, 0.7f));
+		table->translate(glm::vec3(0.0f, -1.6f, 0.0f));
+		
+		// Load and move the red button
+		red = new Model("../Minimal/Assets/buttons/redbutton.obj");
+		red->scale(.1f);
+		red->translate(glm::vec3(-0.3f, -0.8f, -0.15f));
+
+		// Load and move the red button
+		blue = new Model("../Minimal/Assets/buttons/bluebutton.obj");
+		blue->scale(.1f);
+		blue->translate(glm::vec3(0.1f, -0.8f, -0.15f));
+
+		// Load and move the red button
+		green = new Model("../Minimal/Assets/buttons/greenbutton.obj");
+		green->scale(.1f);
+		green->translate(glm::vec3(-0.3f, -0.8f, 0.25f));
+
+		// Load and move the red button
+		yellow = new Model("../Minimal/Assets/buttons/yellowbutton.obj");
+		yellow->scale(.1f);
+		yellow->translate(glm::vec3(0.1f, -0.8f, 0.25f));
+
+		// Load and move the gazebo
+		gazebo = new Model("../Minimal/Assets/Gazebo/Gazebo.obj");	
+		gazebo->translate(glm::vec3(.0f, -1.9f, .0f));
+		gazebo->scale(0.011f);
+
+		//Skybox
+		skybox = new SkyBox(3);
+
+
 	}
 
 	void render(const mat4 & projection, const mat4 & modelview, mat4 left, mat4 right) {
-
+		double deltaTime;
 		client->updateMe(modelview, left, right);
 		
 		players = &(client->players);
@@ -683,12 +729,101 @@ public:
 			(*it)->draw(skyboxShader, projection, modelview, client->getClientId());
 		}
 		table->Draw(shader, projection, modelview);
+		gazebo->Draw(shader, projection, modelview);
+		red->Draw(shader, projection, modelview);
+		blue->Draw(shader, projection, modelview);
+		yellow->Draw(shader, projection, modelview);
+		green->Draw(shader, projection, modelview);
 
 		currentTime = glfwGetTime();
 		deltaTime = currentTime - prevTime;
 		prevTime = currentTime;
+		skybox->draw(skyboxShader, projection, modelview);
+
+		checkPressed(left, right);
+		if (pressed) {
+			handlePress(deltaTime);
+		}
+
 	}
 
+	void checkPressed(glm::mat4 left, glm::mat4 right) {
+		if ((glm::distance(left[3], (red->toWorld[3] + buttonCenterOffset)) < DISTANCE_FROM_BUTTON ||
+			glm::distance(right[3], (red->toWorld[3] + buttonCenterOffset)) < DISTANCE_FROM_BUTTON) && !pressed) {
+			pressed = true;
+			goingDown = true;
+			buttonNumber = 1;
+		}
+		else if ((glm::distance(left[3], (green->toWorld[3] + buttonCenterOffset)) < DISTANCE_FROM_BUTTON ||
+			glm::distance(right[3], (green->toWorld[3] + buttonCenterOffset)) < DISTANCE_FROM_BUTTON) && !pressed) {
+			pressed = true;
+			goingDown = true;
+			buttonNumber = 2;
+		}
+		else if ((glm::distance(left[3], (blue->toWorld[3] + buttonCenterOffset)) < DISTANCE_FROM_BUTTON ||
+			glm::distance(right[3], (blue->toWorld[3] + buttonCenterOffset)) < DISTANCE_FROM_BUTTON) && !pressed) {
+			pressed = true;
+			goingDown = true;
+			buttonNumber = 3;
+		}
+		else if ((glm::distance(left[3], (yellow->toWorld[3] + buttonCenterOffset)) < DISTANCE_FROM_BUTTON ||
+			glm::distance(right[3], (yellow->toWorld[3] + buttonCenterOffset)) < DISTANCE_FROM_BUTTON) && !pressed) {
+			pressed = true;
+			goingDown = true;
+			buttonNumber = 4;
+		}
+	}
+
+	void handlePress(double deltaTime) {
+		if (goingDown) { //Moving button down
+			if (offsetSum > -0.025f) {
+				offset = deltaTime * -0.1f;
+				offsetSum += offset;
+				cerr << offset << endl;
+			}
+			else { //Done going down
+				goingDown = false;
+			}
+		}
+		else { //Moving button back up
+			if (offsetSum < 0.00f) {
+				offset = deltaTime * 0.1f;
+				offsetSum += offset;
+			}
+			else { //Done going back up
+				pressed = false;
+				offsetSum = 0.0f;
+			}
+		}
+		//Moving button
+		switch (buttonNumber) {
+		case 1:
+			red->translate(glm::vec3(0.0f, offset, 0.0f));
+			if (pressed == false) {
+				red->toWorld[3].y = buttonHeight;
+			}
+			break;
+		case 2:
+			green->translate(glm::vec3(0.0f, offset, 0.0f));
+			if (pressed == false) {
+				green->toWorld[3].y = buttonHeight;
+			}
+			break;
+		case 3:
+			blue->translate(glm::vec3(0.0f, offset, 0.0f));
+			if (pressed == false) {
+				blue->toWorld[3].y = buttonHeight;
+			}
+			break;
+		case 4:
+			yellow->translate(glm::vec3(0.0f, offset, 0.0f));
+			if (pressed == false) {
+				yellow->toWorld[3].y = buttonHeight;
+			}
+			break;
+		default: break;
+		}
+	}
 };
 
 // An example application that renders a simple cube
@@ -703,7 +838,7 @@ protected:
 
 	void initGl() override {
 		RiftApp::initGl();
-		glClearColor(0.11f, 0.11f, 0.45f, 0.0f);
+		glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 		glEnable(GL_DEPTH_TEST);
 		ovr_RecenterTrackingOrigin(_session);
 		co2Scene = std::shared_ptr<Co2Scene>(new Co2Scene());

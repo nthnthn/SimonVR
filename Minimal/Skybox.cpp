@@ -38,12 +38,22 @@ SkyBox::SkyBox(int state)
 {
 	this->toWorld = glm::mat4(1.0f);
 
+	if (state == 1 || state == 2) {
 		//left, right, up, down, back, front = "../Minimal/Textures/vr_test_pattern.ppm";
 		for (int i = 0; i < 6; i++) {
 			faces.push_back("../Minimal/Assets/Textures/Cardboard.ppm");
 		}
 		translate(glm::vec3(0.0f, 0.0f, -0.4f));
-	
+	}
+	else if (state == 3) {
+		scale(100.0f);
+		faces.push_back("../Minimal/Assets/skybox/front.ppm");
+		faces.push_back("../Minimal/Assets/skybox/back.ppm");
+		faces.push_back("../Minimal/Assets/skybox/top.ppm");
+		faces.push_back("../Minimal/Assets/skybox/bottom.ppm");
+		faces.push_back("../Minimal/Assets/skybox/right.ppm");
+		faces.push_back("../Minimal/Assets/skybox/left.ppm");
+	}
 
 	this->angle = 0.0f;
 

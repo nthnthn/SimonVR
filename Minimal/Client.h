@@ -18,6 +18,7 @@ public:
 	int getClientId();
 	void updateMe(glm::mat4 head, glm::mat4 left, glm::mat4 right);
 	vector<Player*> players;
+	glm::mat4 getLocalPosition();
 private:
 	int clientID;
 	void addPlayer(Player * newPlayer);	

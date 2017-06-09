@@ -144,6 +144,8 @@
     <None Include="packages.config" />
     <None Include="shader.frag" />
     <None Include="shader.vert" />
+    <None Include="skyboxShader.frag" />
+    <None Include="skyboxShader.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h" />

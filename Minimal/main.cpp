@@ -648,7 +648,7 @@ static int playerCount = 1;
 
 struct Co2Scene : Model {
 private:
-	GLuint shader;
+	GLuint skyboxShader, shader;
 	Model * cube;
 	Client *client;
 	vector<Player*> *players;
@@ -663,28 +663,25 @@ public:
 
 	Co2Scene() {
 		shader = LoadShaders("../Minimal/shader.vert", "../Minimal/shader.frag");
+		skyboxShader = LoadShaders("../Minimal/skyboxShader.vert", "../Minimal/skyboxShader.frag");
 		lineLeft = new Line();
 		lineRight = new Line();
-		//client = new Client();
-		//players = &(client->players);
-		table = new Model("../Minimal/Assets/Marble_Desk_obj/marble_desk.obj");
-		table->scale(0.01f);
+		client = new Client();
+		players = &(client->players);
+		table = new Model("../Minimal/Assets/button_OBJ.obj");
+		table->scale(glm::vec3(0.01f, .03f, 0.01f));
+		table->translate(glm::vec3(0.0f, -1.1f, -1.0f));
+		table->rotate(glm::vec3(0.0f, 1.0f, 0.0f), 90.0f);
 	}
 
 	void render(const mat4 & projection, const mat4 & modelview, mat4 left, mat4 right) {
 
-
-		//lineLeft->update(leftX, leftY, leftZ, leftOrientX, leftOrientY, leftOrientZ);
-		//lineRight->update(rightX, rightY, rightZ, rightOrientX, rightOrientY, rightOrientZ);
-		//lineLeft->draw(projection, modelview);
-		//lineRight->draw(projection, modelview);
-
-		//client->updateMe(modelview, left, right);
+		client->updateMe(modelview, left, right);
 		
-		//players = &(client->players);
-		//for (std::vector<Player*>::iterator it = players->begin(); it < players->end(); it++) {
-		//	(*it)->draw(shader, projection, modelview, client->getClientId());
-		//}
+		players = &(client->players);
+		for (std::vector<Player*>::iterator it = players->begin(); it < players->end(); it++) {
+			(*it)->draw(skyboxShader, projection, modelview, client->getClientId());
+		}
 		table->Draw(shader, projection, modelview);
 
 		currentTime = glfwGetTime();

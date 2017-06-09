@@ -1,24 +1,15 @@
 #version 330 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aNormal;
+layout (location = 2) in vec2 aTexCoords;
 
-// This is an example vertex shader. GLSL is very similar to C.
-// You can define extra functions if needed, and the main() function is
-// called when the vertex shader gets run.
-// The vertex shader gets called once per vertex.
+out vec2 TexCoords;
 
-layout (location = 0) in vec3 position;
-layout (location = 1) in vec3 normal;
-
-uniform mat4 MVP;
-uniform mat4 toWorld;
-
-out vec3 fragPos;
-out vec3 norm;
-out vec3 pos;
+uniform mat4 projection;
+uniform mat4 modelview;
 
 void main()
 {
-    gl_Position = MVP * vec4(position.x, position.y, position.z, 1.0);
-	norm =  normalize(mat3(transpose(inverse(toWorld))) * normal);
-	pos = position;
-	fragPos = vec3(toWorld * vec4(position, 1.0f));
+    gl_Position =   projection * modelview * vec4(aPos, 1.0);  
+    TexCoords = aTexCoords;
 }

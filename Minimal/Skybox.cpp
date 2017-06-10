@@ -55,7 +55,14 @@ SkyBox::SkyBox(int state)
 		faces.push_back("../Minimal/Assets/skybox/left.ppm");
 	}
 
+	else if (state == 4) {
+		scale(0.1f);
+		translate(glm::vec3(0.0f, -0.5f, 0.0f));
+	}
+
 	this->angle = 0.0f;
+
+	setColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
 	unsigned char *image;
 	int width, height;
@@ -133,6 +140,23 @@ void SkyBox::draw(GLuint shaderProgram, const glm::mat4 &projection, const glm::
 	glBindVertexArray(0);
 }
 
+void SkyBox::drawColor(GLuint shaderProgram, const glm::mat4 &projection, const glm::mat4 &modelview)
+{
+	glUseProgram(shaderProgram);
+	GLuint MatrixID = glGetUniformLocation(shaderProgram, "projection");
+	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &projection[0][0]);
+
+	MatrixID = glGetUniformLocation(shaderProgram, "modelview");
+	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(modelview*toWorld)[0][0]);
+
+	MatrixID = glGetUniformLocation(shaderProgram, "color");
+	glUniform4fv(MatrixID, 1, color);
+
+	glBindVertexArray(VAO);
+	glDrawElements(GL_TRIANGLES, numOfIndices, GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
+}
+
 void SkyBox::scale(float scalefactor) {
 	this->toWorld = glm::scale(this->toWorld, glm::vec3(scalefactor, scalefactor, scalefactor));
 }
@@ -150,6 +174,13 @@ void SkyBox::setScale(float scalefactor) {
 	this->toWorld[1] = glm::mat4(1.0f)[1];
 	this->toWorld[2] = glm::mat4(1.0f)[2];
 	scale(scalefactor);
+}
+
+void SkyBox::setColor(glm::vec4 newcolor) {
+	color[0] = newcolor.x;
+	color[1] = newcolor.y;
+	color[2] = newcolor.z;
+	color[3] = newcolor.a;
 }
 
 unsigned char* SkyBox::loadPPM(const char* filename, int& width, int& height)

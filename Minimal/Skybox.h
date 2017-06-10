@@ -14,11 +14,14 @@ class SkyBox
 public:
 	SkyBox(int);
 	~SkyBox();
-	void draw(GLuint, const glm::mat4 &, const glm::mat4 &);
+	void draw(GLuint shader, const glm::mat4 &, const glm::mat4 &);
+	void drawColor(GLuint shader, const glm::mat4 &, const glm::mat4 &);
 	void scale(float scalefactor);
 	void translate(glm::vec3 transfactor);
 	void setScale(float scalefactor);
 	void update(glm::mat4 newToWorld);
+	GLfloat color[4];
+	void setColor(glm::vec4 newcolor);
 
 private:
 	GLuint textId;

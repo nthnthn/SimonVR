@@ -649,7 +649,7 @@ static int playerCount = 1;
 
 struct Co2Scene : Model {
 private:
-	GLuint skyboxShader, shader;
+	GLuint skyboxShader, shader, colorShader;
 	SkyBox *skybox;
 	Model * cube;
 	Client *client;
@@ -657,6 +657,7 @@ private:
 	Model * table;
 	Model *gazebo;
 	Model *red, *green, *blue, *yellow;
+	SkyBox *colorBox;
 	float offset = 0.0f;
 	float offsetSum;
 	float buttonHeight = -0.8f;
@@ -676,6 +677,7 @@ public:
 	Co2Scene() {
 		shader = LoadShaders("../Minimal/shader.vert", "../Minimal/shader.frag");
 		skyboxShader = LoadShaders("../Minimal/skyboxShader.vert", "../Minimal/skyboxShader.frag");
+		colorShader = LoadShaders("../Minimal/colorShader.vert", "../Minimal/colorShader.frag");
 		lineLeft = new Line();
 		lineRight = new Line();
 		client = new Client();
@@ -710,14 +712,14 @@ public:
 		yellow->translate(glm::vec3(0.1f, -0.8f, 0.25f));
 
 		// Load and move the gazebo
-		gazebo = new Model("../Minimal/Assets/Gazebo/Gazebo.obj");	
-		gazebo->translate(glm::vec3(.0f, -1.9f, .0f));
-		gazebo->scale(0.011f);
+		//gazebo = new Model("../Minimal/Assets/Gazebo/Gazebo.obj");	
+		//gazebo->translate(glm::vec3(.0f, -1.9f, .0f));
+		//gazebo->scale(0.011f);
 
 		//Skybox
 		skybox = new SkyBox(3);
 
-
+		colorBox = new SkyBox(4);
 	}
 
 	void render(const mat4 & projection, const mat4 & modelview, mat4 left, mat4 right) {
@@ -729,7 +731,7 @@ public:
 			(*it)->draw(skyboxShader, projection, modelview, client->getClientId());
 		}
 		table->Draw(shader, projection, modelview);
-		gazebo->Draw(shader, projection, modelview);
+		//gazebo->Draw(shader, projection, modelview);
 		red->Draw(shader, projection, modelview);
 		blue->Draw(shader, projection, modelview);
 		yellow->Draw(shader, projection, modelview);
@@ -739,6 +741,7 @@ public:
 		deltaTime = currentTime - prevTime;
 		prevTime = currentTime;
 		skybox->draw(skyboxShader, projection, modelview);
+		colorBox->drawColor(colorShader, projection, modelview);
 
 		checkPressed(left, right);
 		if (pressed) {
@@ -753,24 +756,28 @@ public:
 			pressed = true;
 			goingDown = true;
 			buttonNumber = 1;
+			colorBox->setColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 		}
 		else if ((glm::distance(left[3], (green->toWorld[3] + buttonCenterOffset)) < DISTANCE_FROM_BUTTON ||
 			glm::distance(right[3], (green->toWorld[3] + buttonCenterOffset)) < DISTANCE_FROM_BUTTON) && !pressed) {
 			pressed = true;
 			goingDown = true;
 			buttonNumber = 2;
+			colorBox->setColor(glm::vec4(0.1f, 0.7f, 0.3f, 1.0f));
 		}
 		else if ((glm::distance(left[3], (blue->toWorld[3] + buttonCenterOffset)) < DISTANCE_FROM_BUTTON ||
 			glm::distance(right[3], (blue->toWorld[3] + buttonCenterOffset)) < DISTANCE_FROM_BUTTON) && !pressed) {
 			pressed = true;
 			goingDown = true;
 			buttonNumber = 3;
+			colorBox->setColor(glm::vec4(0.0f, 0.6f, 1.0f, 1.0f));
 		}
 		else if ((glm::distance(left[3], (yellow->toWorld[3] + buttonCenterOffset)) < DISTANCE_FROM_BUTTON ||
 			glm::distance(right[3], (yellow->toWorld[3] + buttonCenterOffset)) < DISTANCE_FROM_BUTTON) && !pressed) {
 			pressed = true;
 			goingDown = true;
 			buttonNumber = 4;
+			colorBox->setColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
 		}
 	}
 
@@ -793,6 +800,7 @@ public:
 			else { //Done going back up
 				pressed = false;
 				offsetSum = 0.0f;
+				colorBox->setColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 			}
 		}
 		//Moving button

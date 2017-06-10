@@ -666,6 +666,8 @@ private:
 	bool goingDown = false;
 	const float DISTANCE_FROM_BUTTON = 0.2f;
 	glm::vec4 buttonCenterOffset;
+	float buttonSpeed = 0.1f;
+	float buttonSpeedMultiplier = 1.0f;
 
 	//Sound
 	irrklang::ISoundEngine *soundEngine = irrklang::createIrrKlangDevice();
@@ -716,9 +718,9 @@ public:
 		yellow->translate(glm::vec3(0.1f, -0.8f, 0.25f));
 
 		// Load and move the gazebo
-		//gazebo = new Model("../Minimal/Assets/Gazebo/Gazebo.obj");	
-		//gazebo->translate(glm::vec3(.0f, -1.9f, .0f));
-		//gazebo->scale(0.011f);
+		gazebo = new Model("../Minimal/Assets/Gazebo/Gazebo.obj");	
+		gazebo->translate(glm::vec3(.0f, -1.9f, .0f));
+		gazebo->scale(0.011f);
 
 		//Skybox
 		skybox = new SkyBox(3);
@@ -735,7 +737,7 @@ public:
 			(*it)->draw(skyboxShader, projection, modelview, client->getClientId());
 		}
 		table->Draw(shader, projection, modelview);
-		//gazebo->Draw(shader, projection, modelview);
+		gazebo->Draw(shader, projection, modelview);
 		red->Draw(shader, projection, modelview);
 		blue->Draw(shader, projection, modelview);
 		yellow->Draw(shader, projection, modelview);
@@ -792,7 +794,7 @@ public:
 	void handlePress(double deltaTime) {
 		if (goingDown) { //Moving button down
 			if (offsetSum > -0.025f) {
-				offset = deltaTime * -0.1f;
+				offset = deltaTime * (-buttonSpeed * buttonSpeedMultiplier);
 				offsetSum += offset;
 			}
 			else { //Done going down
@@ -801,7 +803,7 @@ public:
 		}
 		else { //Moving button back up
 			if (offsetSum < 0.00f) {
-				offset = deltaTime * 0.1f;
+				offset = deltaTime * (buttonSpeed * buttonSpeedMultiplier);
 				offsetSum += offset;
 			}
 			else { //Done going back up

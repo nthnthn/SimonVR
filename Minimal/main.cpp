@@ -620,7 +620,7 @@ namespace Attribute {
 	};
 }
 
-
+#include <irrKlang.h>
 #include <vector>
 #include "Model.h"
 #include "Line.h"
@@ -666,6 +666,10 @@ private:
 	bool goingDown = false;
 	const float DISTANCE_FROM_BUTTON = 0.2f;
 	glm::vec4 buttonCenterOffset;
+
+	//Sound
+	irrklang::ISoundEngine *soundEngine = irrklang::createIrrKlangDevice();
+
 
 public:
 	double currentTime = 0.0;
@@ -757,6 +761,7 @@ public:
 			goingDown = true;
 			buttonNumber = 1;
 			colorBox->setColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+			soundEngine->play2D("../audio/bleep.wav", GL_FALSE);
 		}
 		else if ((glm::distance(left[3], (green->toWorld[3] + buttonCenterOffset)) < DISTANCE_FROM_BUTTON ||
 			glm::distance(right[3], (green->toWorld[3] + buttonCenterOffset)) < DISTANCE_FROM_BUTTON) && !pressed) {
@@ -764,6 +769,7 @@ public:
 			goingDown = true;
 			buttonNumber = 2;
 			colorBox->setColor(glm::vec4(0.1f, 0.7f, 0.3f, 1.0f));
+			soundEngine->play2D("../audio/bleep2.wav", GL_FALSE);
 		}
 		else if ((glm::distance(left[3], (blue->toWorld[3] + buttonCenterOffset)) < DISTANCE_FROM_BUTTON ||
 			glm::distance(right[3], (blue->toWorld[3] + buttonCenterOffset)) < DISTANCE_FROM_BUTTON) && !pressed) {
@@ -771,6 +777,7 @@ public:
 			goingDown = true;
 			buttonNumber = 3;
 			colorBox->setColor(glm::vec4(0.0f, 0.6f, 1.0f, 1.0f));
+			soundEngine->play2D("../audio/bleep3.wav", GL_FALSE);
 		}
 		else if ((glm::distance(left[3], (yellow->toWorld[3] + buttonCenterOffset)) < DISTANCE_FROM_BUTTON ||
 			glm::distance(right[3], (yellow->toWorld[3] + buttonCenterOffset)) < DISTANCE_FROM_BUTTON) && !pressed) {
@@ -778,6 +785,7 @@ public:
 			goingDown = true;
 			buttonNumber = 4;
 			colorBox->setColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+			soundEngine->play2D("../audio/bleep4.wav", GL_FALSE);
 		}
 	}
 
@@ -786,7 +794,6 @@ public:
 			if (offsetSum > -0.025f) {
 				offset = deltaTime * -0.1f;
 				offsetSum += offset;
-				cerr << offset << endl;
 			}
 			else { //Done going down
 				goingDown = false;

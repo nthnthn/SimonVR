@@ -5,8 +5,6 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimonVR", "Minimal\Minimal.vcxproj", "{9E48D90F-7C30-4BCE-B738-3DE30FCE147B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "main", "main\main.vcxproj", "{50FD0159-670F-422A-8DF1-3BC436FE6A2F}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -27,16 +25,6 @@ Global
 		{9E48D90F-7C30-4BCE-B738-3DE30FCE147B}.Release|x64.Build.0 = Release|x64
 		{9E48D90F-7C30-4BCE-B738-3DE30FCE147B}.Release|x86.ActiveCfg = Release|Win32
 		{9E48D90F-7C30-4BCE-B738-3DE30FCE147B}.Release|x86.Build.0 = Release|Win32
-		{50FD0159-670F-422A-8DF1-3BC436FE6A2F}.Debug|ARM.ActiveCfg = Debug|Win32
-		{50FD0159-670F-422A-8DF1-3BC436FE6A2F}.Debug|x64.ActiveCfg = Debug|x64
-		{50FD0159-670F-422A-8DF1-3BC436FE6A2F}.Debug|x64.Build.0 = Debug|x64
-		{50FD0159-670F-422A-8DF1-3BC436FE6A2F}.Debug|x86.ActiveCfg = Debug|Win32
-		{50FD0159-670F-422A-8DF1-3BC436FE6A2F}.Debug|x86.Build.0 = Debug|Win32
-		{50FD0159-670F-422A-8DF1-3BC436FE6A2F}.Release|ARM.ActiveCfg = Release|Win32
-		{50FD0159-670F-422A-8DF1-3BC436FE6A2F}.Release|x64.ActiveCfg = Release|x64
-		{50FD0159-670F-422A-8DF1-3BC436FE6A2F}.Release|x64.Build.0 = Release|x64
-		{50FD0159-670F-422A-8DF1-3BC436FE6A2F}.Release|x86.ActiveCfg = Release|Win32
-		{50FD0159-670F-422A-8DF1-3BC436FE6A2F}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

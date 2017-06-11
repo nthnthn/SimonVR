@@ -23,6 +23,7 @@ limitations under the License.
 #include <exception>
 #include <algorithm>
 
+#include<WinSock2.h>
 #include <Windows.h>
 
 #define __STDC_FORMAT_MACROS 1

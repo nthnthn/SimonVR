@@ -4,13 +4,13 @@
 #define DEF_SERV_PORT 8080
 #define DEF_CLIENT_PORT 0
 #define HOSTNAME_LEN 1024
-#define WAIT_TIME 90
+#define WAIT_TIME 1
+#define INIT_MSG 1
+#define UPDATE_MSG 0
+#define BTN_PRSS_MSG 2
 
 Client::Client() {
-	clientID = 0;
-	player = new Player(clientID);
-	addPlayer(player);
-	localPosition[3] = {0.0f, 0.0f, -1.0f, 0.0f};
+	clientID = 9;
 
 	/***********SOCKET STUFF *********************/
 
@@ -33,7 +33,14 @@ Client::Client() {
 
 	message = (char *)malloc(DEF_BUFLEN * sizeof(char));
 
+	setId();
+
 	/***********END OF SOCKET STUFF *********************/
+
+	player = new Player(clientID);
+	addPlayer(player);
+	//testplayer = new Player(1);
+	//addPlayer(testplayer);
 
 	btnSequence = "";
 	_beginthread(recvMessages, 0, this);
@@ -41,6 +48,47 @@ Client::Client() {
 
 Client::~Client() {
 	free(message);
+}
+
+void Client::setId() {
+	while (clientID == 9) {
+		string init = to_string(clientID) + " " + to_string(INIT_MSG);
+		init += '\0';
+		int numBytesRcvd;
+		char buffer[DEF_BUFLEN + 1];
+
+		struct sockaddr_storage fromAddr; // Source address of server
+										  // Set length of from address structure (in-out parameter)
+		socklen_t fromAddrLen = sizeof(fromAddr);
+
+		//memcpy(message, (char *)&init[0], btnSequence.length() * sizeof(char));
+		// Send the string to the server
+		int numBytes = sendto(sock, &init[0], strlen(&init[0]), 0,
+			(struct sockaddr *)&server, sizeof(struct sockaddr_in));
+		if (numBytes < 0)
+			fprintf(stderr, "sendto() failed");
+
+		numBytesRcvd = recvfrom(getSock(), buffer, DEF_BUFLEN, 0,
+			(struct sockaddr *) &fromAddr, &fromAddrLen);
+
+		if (numBytesRcvd > 0) {
+			stringstream ss;
+			ss << buffer;
+
+			int playerID;
+			ss >> playerID;
+
+			int check;
+			ss >> check;
+
+			if (check == 1) {
+				clientID = playerID;
+			}
+		}
+		Sleep(1000);
+	}
+
+	fprintf(stderr, "%d", clientID);
 }
 
 int Client::getClientId() {
@@ -113,17 +161,54 @@ void recvMessages(void *arg) {
 		numBytesRcvd = recvfrom(client->getSock(), buffer, DEF_BUFLEN, 0,
 			(struct sockaddr *) &fromAddr, &fromAddrLen);
 		if (numBytesRcvd > 0) {
-			fprintf(stderr, "got message: %d\n", numBytesRcvd);
+			//fprintf(stderr, "got message: %d\n", numBytesRcvd);
 			client->processMessage(&buffer[0]);
 		}
 	}
-	fprintf(stderr, "im out: %d\n", numBytesRcvd);
+	//fprintf(stderr, "im out: %d\n", numBytesRcvd);
 
 }
 
 void Client::processMessage(char *buffer) {
-	fputs(buffer, stdout);
-	 //scanf_s("id:", buffer, )
+	//fputs(buffer, stdout);
+	stringstream ss;
+	ss << buffer;
+
+	int playerID;
+	ss >> playerID;
+
+	int messageType;
+	ss >> messageType;
+
+	glm::mat4 headmat;
+	glm::mat4 leftmat;
+	glm::mat4 rightmat;
+	glm::mat4 *mat;
+	for (int i = 0; i < 3; i++) {
+		if (i == 0) {
+			mat = &headmat;
+		}
+		else if (i == 1) {
+			mat = &leftmat;
+		}
+		else {
+			mat = &rightmat;
+		}
+
+		for (int j = 0; j < 4; j++) {
+			for (int k = 0; k < 4; k++) {
+				ss >> (*mat)[j][k];
+			}
+		}
+	}
+
+	//for (std::vector<Player*>::iterator it; it = players.begin )
+	/*if (playerID == clientID) {
+		headmat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * headmat;
+		leftmat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * leftmat;
+		rightmat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * rightmat;
+		testplayer->update(headmat, leftmat, rightmat);
+	}*/
 }
 
 glm::mat4 Client::getLocalPosition() {
@@ -186,7 +271,7 @@ void Client::cleanUp(SOCKET sock) {
 }
 
 void Client::convertPlayerToString(glm::mat4 head, glm::mat4 left, glm::mat4 right, char* myStr) {
-	std::string str = to_string(clientID) + ",0,";
+	std::string str = to_string(clientID) + " 0 ";
 	glm::mat4 matrix;
 	for (int l = 0; l < 3; l++) {
 		switch (l) {
@@ -196,11 +281,11 @@ void Client::convertPlayerToString(glm::mat4 head, glm::mat4 left, glm::mat4 rig
 			break;
 		case 1:
 			matrix = left;
-			str += ",";
+			str += " ";
 			break;
 		case 2:
 			matrix = right;
-			str += ",";
+			str += " ";
 			break;
 		default: break;
 		}
@@ -212,7 +297,7 @@ void Client::convertPlayerToString(glm::mat4 head, glm::mat4 left, glm::mat4 rig
 					str += num[k];
 				}
 				if (i != 3 || j != 3) {
-					str += ",";
+					str += " ";
 				}
 			}
 		}

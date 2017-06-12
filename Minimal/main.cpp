@@ -551,7 +551,7 @@ protected:
 		ovrTrackingState trackState = ovr_GetTrackingState(_session, displayMidpointSeconds, ovrTrue);
 		ovrPosef leftHandPose = trackState.HandPoses[ovrHand_Left].ThePose;
 		ovrPosef rightHandPose = trackState.HandPoses[ovrHand_Right].ThePose;
-
+		ovrPosef headPose = trackState.HeadPose.ThePose;
 
 		ovrPosef eyePoses[2];
 		ovr_GetEyePoses(_session, frame, true, _viewScaleDesc.HmdToEyeOffset, eyePoses, &_sceneLayer.SensorSampleTime);
@@ -575,7 +575,7 @@ protected:
 			const auto& vp = _sceneLayer.Viewport[eye];
 			glViewport(vp.Pos.x, vp.Pos.y, vp.Size.w, vp.Size.h);
 			_sceneLayer.RenderPose[eye] = eyePoses[eye];
-			renderScene(_eyeProjections[eye], ovr::toGlm(eyePoses[eye]), ovr::toGlm(leftHandPose), ovr::toGlm(rightHandPose));
+			renderScene(_eyeProjections[eye], ovr::toGlm(eyePoses[eye]), ovr::toGlm(headPose), ovr::toGlm(leftHandPose), ovr::toGlm(rightHandPose));
 		});
 		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
@@ -591,7 +591,7 @@ protected:
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 	}
 
-	virtual void renderScene(const glm::mat4 & projection, const glm::mat4 & headPose, mat4 left, mat4 right) = 0;
+	virtual void renderScene(const glm::mat4 & projection, const glm::mat4 & headPose, mat4 head, mat4 left, mat4 right) = 0;
 	virtual void updateTriggers(bool leftHandTriggerPressed, bool rightHandTriggerPressed) = 0;
 };
 
@@ -729,9 +729,9 @@ public:
 		colorBox = new SkyBox(4);
 	}
 
-	void render(const mat4 & projection, const mat4 & modelview, mat4 left, mat4 right) {
+	void render(const mat4 & projection, const mat4 & modelview, mat4 head, mat4 left, mat4 right) {
 		double deltaTime;
-		client->updateMe(modelview, left, right);
+		client->updateMe(head, left, right);
 		
 		players = &(client->players);
 		for (std::vector<Player*>::iterator it = players->begin(); it < players->end(); it++) {
@@ -882,8 +882,8 @@ protected:
 		//co2Scene.reset();
 	}
 
-	void renderScene(const glm::mat4 & projection, const glm::mat4 & headPose, mat4 left, mat4 right) override {
-		co2Scene->render(projection, glm::inverse(headPose), left, right);
+	void renderScene(const glm::mat4 & projection, const glm::mat4 & headPose, mat4 head, mat4 left, mat4 right) override {
+		co2Scene->render(projection, glm::inverse(headPose), head, left, right);
 		
 	}
 };

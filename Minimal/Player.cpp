@@ -20,6 +20,7 @@ void Player::draw(GLuint shaderProgram, const glm::mat4 &projection, const glm::
 
 void Player::update(glm::mat4 headmat, glm::mat4 left, glm::mat4 right) {
 	head->update(headmat);
+	head->scale(.2f);
 	leftHand->update(left);
 	leftHand->scale(.1f);
 	rightHand->update(right);

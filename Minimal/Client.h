@@ -15,7 +15,8 @@
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <string>
-#include<process.h>
+#include <sstream>
+#include <process.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -37,6 +38,8 @@ public:
 	SOCKET getSock();
 	void processMessage(char *buffer);
 
+	//Player * testplayer;
+
 private:
 	int clientID;
 	void addPlayer(Player * newPlayer);	
@@ -50,6 +53,7 @@ private:
 		glm::mat4 right, char* myStr);
 	void updateServer();
 	void sendMessages();
+	void setId();
 
 	WSADATA wsaData;
 	int iResult;

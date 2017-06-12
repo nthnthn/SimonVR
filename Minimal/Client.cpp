@@ -39,8 +39,6 @@ Client::Client() {
 
 	player = new Player(clientID);
 	addPlayer(player);
-	//testplayer = new Player(1);
-	//addPlayer(testplayer);
 
 	btnSequence = "";
 	_beginthread(recvMessages, 0, this);
@@ -177,6 +175,8 @@ void Client::processMessage(char *buffer) {
 	int playerID;
 	ss >> playerID;
 
+	if (playerID == clientID) return;
+
 	int messageType;
 	ss >> messageType;
 
@@ -184,31 +184,33 @@ void Client::processMessage(char *buffer) {
 	glm::mat4 leftmat;
 	glm::mat4 rightmat;
 	glm::mat4 *mat;
-	for (int i = 0; i < 3; i++) {
-		if (i == 0) {
-			mat = &headmat;
-		}
-		else if (i == 1) {
-			mat = &leftmat;
-		}
-		else {
-			mat = &rightmat;
-		}
+	for (std::vector<Player*>::iterator it = players.begin(); it < players.end(); it++) {
+		if ((*it)->playerID == playerID) {
+			//Found the player to update
+			for (int i = 0; i < 3; i++) {
+				if (i == 0) {
+					mat = &headmat;
+				}
+				else if (i == 1) {
+					mat = &leftmat;
+				}
+				else {
+					mat = &rightmat;
+				}
 
-		for (int j = 0; j < 4; j++) {
-			for (int k = 0; k < 4; k++) {
-				ss >> (*mat)[j][k];
+				for (int j = 0; j < 4; j++) {
+					for (int k = 0; k < 4; k++) {
+						ss >> (*mat)[j][k];
+					}
+				}
 			}
+			(*it)->update(headmat, leftmat, rightmat);
+		}
+		else { //Player to update not found
+			Player* newPlayer = new Player(playerID);
+			players.push_back(newPlayer);
 		}
 	}
-
-	//for (std::vector<Player*>::iterator it; it = players.begin )
-	/*if (playerID == clientID) {
-		headmat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * headmat;
-		leftmat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * leftmat;
-		rightmat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * rightmat;
-		testplayer->update(headmat, leftmat, rightmat);
-	}*/
 }
 
 glm::mat4 Client::getLocalPosition() {
@@ -251,7 +253,7 @@ void Client::setAddrInfo(sockaddr_in *addr, bool isClient) {
 		addr->sin_addr.S_un.S_un_b.s_b1 = (unsigned char)128;
 		addr->sin_addr.S_un.S_un_b.s_b2 = (unsigned char)54;
 		addr->sin_addr.S_un.S_un_b.s_b3 = (unsigned char)70;
-		addr->sin_addr.S_un.S_un_b.s_b4 = (unsigned char)60;
+		addr->sin_addr.S_un.S_un_b.s_b4 = (unsigned char)63;
 	}
 }
 

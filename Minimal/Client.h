@@ -42,6 +42,16 @@ public:
 
 private:
 	int clientID;
+	int redC = 0;
+	int greenC = 0;
+	int blueC = 0;
+	int yellowC = 0;
+
+	int serverRedC = -1;
+	int serverGreenC = -1;
+	int serverBlueC = -1;
+	int serverYellowC = -1;
+
 	void addPlayer(Player * newPlayer);	
 	Player* player;
 	glm::mat4 localPosition = glm::mat4(0.0f);

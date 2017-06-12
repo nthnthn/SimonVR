@@ -209,6 +209,7 @@ void Client::processMessage(char *buffer) {
 		else { //Player to update not found
 			Player* newPlayer = new Player(playerID);
 			players.push_back(newPlayer);
+			return;
 		}
 	}
 }

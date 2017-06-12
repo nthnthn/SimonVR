@@ -180,6 +180,10 @@ void Client::processMessage(char *buffer) {
 	int messageType;
 	ss >> messageType;
 
+	if (messageType == INIT_MSG) {
+		return;
+	}
+
 	glm::mat4 headmat;
 	glm::mat4 leftmat;
 	glm::mat4 rightmat;
@@ -208,7 +212,7 @@ void Client::processMessage(char *buffer) {
 		}
 		else { //Player to update not found
 			Player* newPlayer = new Player(playerID);
-			players.push_back(newPlayer);
+			addPlayer(newPlayer);
 			return;
 		}
 	}

@@ -735,7 +735,7 @@ public:
 		
 		players = &(client->players);
 		for (std::vector<Player*>::iterator it = players->begin(); it < players->end(); it++) {
-			(*it)->draw(skyboxShader, projection, modelview, client->getClientId());
+			//(*it)->draw(skyboxShader, projection, modelview, client->getClientId());
 		}
 		table->Draw(shader, projection, modelview);
 		//gazebo->Draw(shader, projection, modelview);

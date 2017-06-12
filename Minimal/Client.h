@@ -15,6 +15,7 @@
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <string>
+#include<process.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -33,6 +34,9 @@ public:
 	void updateMe(glm::mat4 head, glm::mat4 left, glm::mat4 right);
 	vector<Player*> players;
 	glm::mat4 getLocalPosition();
+	SOCKET getSock();
+	void processMessage(char *buffer);
+
 private:
 	int clientID;
 	void addPlayer(Player * newPlayer);	
@@ -45,8 +49,8 @@ private:
 	void convertPlayerToString(glm::mat4 head, glm::mat4 left,
 		glm::mat4 right, char* myStr);
 	void updateServer();
-	void recvMessages();
 	void sendMessages();
+
 	WSADATA wsaData;
 	int iResult;
 	sockaddr_in client, server;
@@ -54,6 +58,10 @@ private:
 	char *message;
 	bool buttonHit;
 	string btnSequence;
+
+	int waitCounter = 0;
 };
+
+void recvMessages(void *arg);
 
 #endif

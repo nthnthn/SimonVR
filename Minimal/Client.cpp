@@ -4,6 +4,7 @@
 #define DEF_SERV_PORT 8080
 #define DEF_CLIENT_PORT 0
 #define HOSTNAME_LEN 1024
+#define WAIT_TIME 90
 
 Client::Client() {
 	clientID = 0;
@@ -35,7 +36,7 @@ Client::Client() {
 	/***********END OF SOCKET STUFF *********************/
 
 	btnSequence = "";
-
+	_beginthread(recvMessages, 0, this);
 }
 
 Client::~Client() {
@@ -44,6 +45,10 @@ Client::~Client() {
 
 int Client::getClientId() {
 	return clientID;
+}
+
+SOCKET Client::getSock() {
+	return sock;
 }
 
 void Client::addPlayer(Player * newPlayer) {
@@ -57,8 +62,14 @@ void Client::updateMe(glm::mat4 head, glm::mat4 left, glm::mat4 right) {
 }
 
 void Client::updateServer() {
-	sendMessages();
-	recvMessages();
+	if (waitCounter > WAIT_TIME) {
+		sendMessages();
+		waitCounter = 0;
+	}
+	else {
+		waitCounter++;
+	}
+
 }
 
 void Client::sendMessages() {
@@ -86,11 +97,33 @@ void Client::sendMessages() {
 	}
 }
 
-void Client::recvMessages() {
+void recvMessages(void *arg) {
+	Client *client = (Client *)arg;
+	
 	struct sockaddr_storage fromAddr; // Source address of server
 									  // Set length of from address structure (in-out parameter)
 	socklen_t fromAddrLen = sizeof(fromAddr);
 
+	int numBytesRcvd;
+	char buffer[DEF_BUFLEN + 1];
+	
+	// When numBytesRcvd == 0 that means 0 bytes were received, therefore
+	// no more messages
+	while(true) {
+		numBytesRcvd = recvfrom(client->getSock(), buffer, DEF_BUFLEN, 0,
+			(struct sockaddr *) &fromAddr, &fromAddrLen);
+		if (numBytesRcvd > 0) {
+			fprintf(stderr, "got message: %d\n", numBytesRcvd);
+			client->processMessage(&buffer[0]);
+		}
+	}
+	fprintf(stderr, "im out: %d\n", numBytesRcvd);
+
+}
+
+void Client::processMessage(char *buffer) {
+	fputs(buffer, stdout);
+	 //scanf_s("id:", buffer, )
 }
 
 glm::mat4 Client::getLocalPosition() {
@@ -130,10 +163,10 @@ void Client::setAddrInfo(sockaddr_in *addr, bool isClient) {
 		addr->sin_addr.S_un.S_un_b.s_b4 = currHost->h_addr_list[0][3];
 	}
 	else {
-		addr->sin_addr.S_un.S_un_b.s_b1 = (unsigned char)127;
-		addr->sin_addr.S_un.S_un_b.s_b2 = (unsigned char)0;
-		addr->sin_addr.S_un.S_un_b.s_b3 = (unsigned char)0;
-		addr->sin_addr.S_un.S_un_b.s_b4 = (unsigned char)1;
+		addr->sin_addr.S_un.S_un_b.s_b1 = (unsigned char)128;
+		addr->sin_addr.S_un.S_un_b.s_b2 = (unsigned char)54;
+		addr->sin_addr.S_un.S_un_b.s_b3 = (unsigned char)70;
+		addr->sin_addr.S_un.S_un_b.s_b4 = (unsigned char)60;
 	}
 }
 
@@ -153,21 +186,21 @@ void Client::cleanUp(SOCKET sock) {
 }
 
 void Client::convertPlayerToString(glm::mat4 head, glm::mat4 left, glm::mat4 right, char* myStr) {
-	std::string str = "id:" + to_string(clientID) + "{";
+	std::string str = to_string(clientID) + ",0,";
 	glm::mat4 matrix;
 	for (int l = 0; l < 3; l++) {
 		switch (l) {
 		case 0:
 			matrix = head;
-			str += "h{";
+			//str += "";
 			break;
 		case 1:
 			matrix = left;
-			str += "l{";
+			str += ",";
 			break;
 		case 2:
 			matrix = right;
-			str += "r{";
+			str += ",";
 			break;
 		default: break;
 		}
@@ -183,9 +216,9 @@ void Client::convertPlayerToString(glm::mat4 head, glm::mat4 left, glm::mat4 rig
 				}
 			}
 		}
-		str += "}";
+		//str += ",";
 	}
-	str += "}";
+	//str += "";
 	str += '\0';
 	memcpy(myStr, &str[0], str.length() * sizeof(char));
 }

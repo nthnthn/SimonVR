@@ -10,7 +10,7 @@
 #define BTN_PRSS_MSG 2
 
 Client::Client() {
-	clientID = 9;
+	clientID = 0;
 
 	/***********SOCKET STUFF *********************/
 
@@ -37,8 +37,12 @@ Client::Client() {
 
 	/***********END OF SOCKET STUFF *********************/
 
-	player = new Player(clientID);
+	player = new Player(0);
 	addPlayer(player);
+	player1 = new Player(1);
+	addPlayer(player1);
+	player2 = new Player(2);
+	addPlayer(player2);
 
 	btnSequence = "";
 	_beginthread(recvMessages, 0, this);
@@ -86,7 +90,7 @@ void Client::setId() {
 		Sleep(1000);
 	}
 
-	fprintf(stderr, "%d", clientID);
+	fprintf(stderr, "YOUR ID: %d\n", clientID);
 }
 
 int Client::getClientId() {
@@ -99,6 +103,7 @@ SOCKET Client::getSock() {
 
 void Client::addPlayer(Player * newPlayer) {
 	players.push_back(newPlayer);
+	cerr << "ADDING NEW PLAYER WITH ID: " << newPlayer->playerID << "\n";
 }
 
 void Client::updateMe(glm::mat4 head, glm::mat4 left, glm::mat4 right) {
@@ -168,6 +173,7 @@ void recvMessages(void *arg) {
 }
 
 void Client::processMessage(char *buffer) {
+	cerr << "DECODING MESSAGE\n";
 	//fputs(buffer, stdout);
 	stringstream ss;
 	ss << buffer;
@@ -188,7 +194,9 @@ void Client::processMessage(char *buffer) {
 	glm::mat4 leftmat;
 	glm::mat4 rightmat;
 	glm::mat4 *mat;
-	for (std::vector<Player*>::iterator it = players.begin(); it < players.end(); it++) {
+	std::vector<Player*>::iterator it;
+	for (it = players.begin(); it < players.end(); it++) {
+		cerr << "CHECKING PLAYER: " << (*it)->playerID << endl;
 		if ((*it)->playerID == playerID) {
 			//Found the player to update
 			for (int i = 0; i < 3; i++) {
@@ -209,11 +217,14 @@ void Client::processMessage(char *buffer) {
 				}
 			}
 			(*it)->update(headmat, leftmat, rightmat);
-		}
-		else { //Player to update not found
-			Player* newPlayer = new Player(playerID);
-			addPlayer(newPlayer);
 			return;
+		}
+	}
+	cerr << "PLAYER " << playerID << " NOT FOUND \n";
+
+	for (it = players.begin(); it < players.end(); it++) {
+		if ((*it)->playerID == -1) {
+			(*it)->playerID == playerID;
 		}
 	}
 }
@@ -313,4 +324,8 @@ void Client::convertPlayerToString(glm::mat4 head, glm::mat4 left, glm::mat4 rig
 	//str += "";
 	str += '\0';
 	memcpy(myStr, &str[0], str.length() * sizeof(char));
+}
+
+vector<Player*> * Client::getPlayers() {
+	return &players;
 }

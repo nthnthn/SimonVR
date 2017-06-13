@@ -10,12 +10,14 @@ Player::Player(int id) {
 Player::~Player() {}
 
 void Player::draw(GLuint shaderProgram, const glm::mat4 &projection, const glm::mat4 &modelview, int clientID) {
+	if (playerID != -1) {
 
-	if (clientID != playerID) {
-		head->draw(shaderProgram, projection, modelview);
+		if (clientID != playerID) {
+			head->draw(shaderProgram, projection, modelview);
+		}
+		leftHand->draw(shaderProgram, projection, modelview);
+		rightHand->draw(shaderProgram, projection, modelview);
 	}
-	leftHand->draw(shaderProgram, projection, modelview);
-	rightHand->draw(shaderProgram, projection, modelview);
 }
 
 void Player::update(glm::mat4 headmat, glm::mat4 left, glm::mat4 right) {

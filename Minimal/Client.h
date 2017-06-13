@@ -33,10 +33,10 @@ public:
 	~Client();
 	int getClientId();
 	void updateMe(glm::mat4 head, glm::mat4 left, glm::mat4 right);
-	vector<Player*> players;
 	glm::mat4 getLocalPosition();
 	SOCKET getSock();
 	void processMessage(char *buffer);
+	vector<Player*> * getPlayers();
 
 	//Player * testplayer;
 
@@ -52,8 +52,11 @@ private:
 	int serverBlueC = -1;
 	int serverYellowC = -1;
 
+	vector<Player*> players;
 	void addPlayer(Player * newPlayer);	
 	Player* player;
+	Player* player1;
+	Player* player2;
 	glm::mat4 localPosition = glm::mat4(0.0f);
 	void cleanUp(SOCKET sock);
 	SOCKET getSocket(int family, int type);

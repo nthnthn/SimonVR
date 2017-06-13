@@ -688,7 +688,6 @@ public:
 		lineLeft = new Line();
 		lineRight = new Line();
 		client = new Client();
-		players = &(client->players);
 		offsetSum = 0.0f;
 		buttonCenterOffset = glm::vec4(0.09f, 0.0f, -0.08f, 0.0f);
 
@@ -733,9 +732,9 @@ public:
 		double deltaTime;
 		client->updateMe(head, left, right);
 		
-		players = &(client->players);
+		players = client->getPlayers();
 		for (std::vector<Player*>::iterator it = players->begin(); it < players->end(); it++) {
-			//(*it)->draw(skyboxShader, projection, modelview, client->getClientId());
+			(*it)->draw(skyboxShader, projection, modelview, client->getClientId());
 		}
 		table->Draw(shader, projection, modelview);
 		//gazebo->Draw(shader, projection, modelview);

@@ -223,6 +223,8 @@ void Client::processMessage(char *buffer) {
 					player3->update(msg.head, msg.left, msg.right);
 					player3->playerID = msg.id;
 				}
+				playerCount += 1;
+				playerCount = playerCount % 3;
 			}
 		}
 

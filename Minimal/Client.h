@@ -45,6 +45,8 @@ private:
 	int clientID;
 	void addPlayer(Player * newPlayer);	
 	Player* player;
+	Player* player2;
+	Player* player3;
 	glm::mat4 localPosition = glm::mat4(0.0f);
 	void cleanUp(SOCKET sock);
 	SOCKET getSocket(int family, int type);

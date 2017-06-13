@@ -1,5 +1,7 @@
 #include "Player.h"
 
+bool isInitialized = false;
+
 Player::Player(int id) {
 	playerID = id;
 	head = new SkyBox(0);
@@ -10,18 +12,21 @@ Player::Player(int id) {
 	rightHandNext = new SkyBox(2);
 	isUpdating = false;
 	update(glm::mat4(1.0f), glm::mat4(1.0f), glm::mat4(1.0f));
+	isInitialized = true;
 }
 
 Player::~Player() {}
 
 void Player::draw(GLuint shaderProgram, const glm::mat4 &projection, const glm::mat4 &modelview, int clientID, bool isRendering) {
-	isUpdating = true;
-	if (clientID != playerID) {
-		head->draw(shaderProgram, projection, modelview);
+	if (playerID != -1) {
+		isUpdating = true;
+		if (clientID != playerID) {
+			head->draw(shaderProgram, projection, modelview);
+		}
+		leftHand->draw(shaderProgram, projection, modelview);
+		rightHand->draw(shaderProgram, projection, modelview);
+		isUpdating = false;
 	}
-	leftHand->draw(shaderProgram, projection, modelview);
-	rightHand->draw(shaderProgram, projection, modelview);
-	isUpdating = false;
 }
 
 void Player::update(glm::mat4 headmat, glm::mat4 leftmat, glm::mat4 rightmat) {

@@ -10,6 +10,8 @@
 #define BTN_PRSS_MSG 2
 #define DEF_CLIENT_ID -1
 
+int playerCount = 1;
+
 struct posMessage {
 	int id;
 	int msgType;
@@ -58,9 +60,12 @@ Client::Client() {
 	/***********END OF SOCKET STUFF *********************/
 
 	player = new Player(clientID);
+	player2 = new Player(DEF_CLIENT_ID);
+	player3 = new Player(DEF_CLIENT_ID);
+	
 	addPlayer(player);
-	//testplayer = new Player(1);
-	//addPlayer(testplayer);
+	addPlayer(player2);
+	addPlayer(player3);
 
 	btnSequence = "";
 	_beginthread(recvMessages, 0, this);
@@ -210,8 +215,14 @@ void Client::processMessage(char *buffer) {
 				}
 			}
 			if (!isUpdated) {
-				Player *player = new Player(msg.id);
-				player->update(msg.head, msg.left, msg.right);
+				if (playerCount == 1) {
+					player2->update(msg.head, msg.left, msg.right);
+					player2->playerID = msg.id;
+				}
+				else if (playerCount == 2) {
+					player3->update(msg.head, msg.left, msg.right);
+					player3->playerID = msg.id;
+				}
 			}
 		}
 

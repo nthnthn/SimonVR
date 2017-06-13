@@ -127,19 +127,24 @@ void SkyBox::update(glm::mat4 newToWorld) {
 }
 
 void SkyBox::draw(GLuint shaderProgram, const glm::mat4 &projection, const glm::mat4 &modelview)
-{
-	if (isInitialized) {
-		glBindTexture(GL_TEXTURE_CUBE_MAP, textId);
-		glUseProgram(shaderProgram);
-		GLuint MatrixID = glGetUniformLocation(shaderProgram, "projection");
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &projection[0][0]);
+{ 
+	try {
+		if (isInitialized) {
+			glBindTexture(GL_TEXTURE_CUBE_MAP, textId);
+			glUseProgram(shaderProgram);
+			GLuint MatrixID = glGetUniformLocation(shaderProgram, "projection");
+			glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &projection[0][0]);
 
-		MatrixID = glGetUniformLocation(shaderProgram, "modelview");
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(modelview*toWorld)[0][0]);
+			MatrixID = glGetUniformLocation(shaderProgram, "modelview");
+			glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(modelview*toWorld)[0][0]);
 
-		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, numOfIndices, GL_UNSIGNED_INT, 0);
-		glBindVertexArray(0);
+			glBindVertexArray(VAO);
+			glDrawElements(GL_TRIANGLES, numOfIndices, GL_UNSIGNED_INT, 0);
+			glBindVertexArray(0);
+		}
+	}
+	catch (std::exception e) {
+
 	}
 }
 

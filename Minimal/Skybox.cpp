@@ -36,6 +36,7 @@ GLuint skyI[] = {  // Note that we start from 0!
 
 SkyBox::SkyBox(int state)
 {
+	isInitialized = false;
 	this->toWorld = glm::mat4(1.0f);
 
 	if (state == 1 || state == 2) {
@@ -116,7 +117,7 @@ SkyBox::SkyBox(int state)
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
+	isInitialized = true;
 }
 
 SkyBox::~SkyBox() {}
@@ -127,17 +128,19 @@ void SkyBox::update(glm::mat4 newToWorld) {
 
 void SkyBox::draw(GLuint shaderProgram, const glm::mat4 &projection, const glm::mat4 &modelview)
 {
-	glBindTexture(GL_TEXTURE_CUBE_MAP, textId);
-	glUseProgram(shaderProgram);
-	GLuint MatrixID = glGetUniformLocation(shaderProgram, "projection");
-	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &projection[0][0]);
+	if (isInitialized) {
+		glBindTexture(GL_TEXTURE_CUBE_MAP, textId);
+		glUseProgram(shaderProgram);
+		GLuint MatrixID = glGetUniformLocation(shaderProgram, "projection");
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &projection[0][0]);
 
-	MatrixID = glGetUniformLocation(shaderProgram, "modelview");
-	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(modelview*toWorld)[0][0]);
+		MatrixID = glGetUniformLocation(shaderProgram, "modelview");
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &(modelview*toWorld)[0][0]);
 
-	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, numOfIndices, GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
+		glBindVertexArray(VAO);
+		glDrawElements(GL_TRIANGLES, numOfIndices, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+	}
 }
 
 void SkyBox::drawColor(GLuint shaderProgram, const glm::mat4 &projection, const glm::mat4 &modelview)

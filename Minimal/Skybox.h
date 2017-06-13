@@ -33,6 +33,7 @@ private:
 	std::vector<const GLchar *> faces;
 	unsigned char* loadPPM(const char* filename, int& width, int& height);
 	void scale(glm::vec3 scalarVector);
+	bool isInitialized;
 };
 
 #endif

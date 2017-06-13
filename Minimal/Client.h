@@ -34,6 +34,7 @@ public:
 	int getClientId();
 	void updateMe(glm::mat4 head, glm::mat4 left, glm::mat4 right);
 	vector<Player*> players;
+	vector<Player*> toUpdate;
 	glm::mat4 getLocalPosition();
 	SOCKET getSock();
 	void processMessage(char *buffer);
@@ -51,8 +52,8 @@ private:
 	void bindSocket(SOCKET sock, sockaddr_in *server);
 	void convertPlayerToString(glm::mat4 head, glm::mat4 left,
 		glm::mat4 right, char* myStr);
-	void updateServer();
-	void sendMessages();
+	void updateServer(glm::mat4 head, glm::mat4 left, glm::mat4 right);
+	void sendMessages(glm::mat4 head, glm::mat4 left, glm::mat4 right);
 	void setId();
 
 	WSADATA wsaData;
@@ -64,6 +65,9 @@ private:
 	string btnSequence;
 
 	int waitCounter = 0;
+
+	Player *testplayer;
+
 };
 
 void recvMessages(void *arg);

@@ -571,11 +571,15 @@ protected:
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _fbo);
 		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, curTexId, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		int i = 0;
 		ovr::for_each_eye([&](ovrEyeType eye) {
 			const auto& vp = _sceneLayer.Viewport[eye];
 			glViewport(vp.Pos.x, vp.Pos.y, vp.Size.w, vp.Size.h);
 			_sceneLayer.RenderPose[eye] = eyePoses[eye];
+			//if (i == 0) { updateRender(true); }
 			renderScene(_eyeProjections[eye], ovr::toGlm(eyePoses[eye]), ovr::toGlm(headPose), ovr::toGlm(leftHandPose), ovr::toGlm(rightHandPose));
+			//if (i != 0) { updateRender(false); }
+			i++;
 		});
 		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
@@ -593,6 +597,7 @@ protected:
 
 	virtual void renderScene(const glm::mat4 & projection, const glm::mat4 & headPose, mat4 head, mat4 left, mat4 right) = 0;
 	virtual void updateTriggers(bool leftHandTriggerPressed, bool rightHandTriggerPressed) = 0;
+	virtual void updateRender(bool isRendering) = 0;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -679,9 +684,11 @@ public:
 	double prevTime = 0.0;
 	Line * lineLeft;
 	Line * lineRight;
+	bool isRendering;
 	
 
 	Co2Scene() {
+		isRendering = false;
 		shader = LoadShaders("../Minimal/shader.vert", "../Minimal/shader.frag");
 		skyboxShader = LoadShaders("../Minimal/skyboxShader.vert", "../Minimal/skyboxShader.frag");
 		colorShader = LoadShaders("../Minimal/colorShader.vert", "../Minimal/colorShader.frag");
@@ -734,9 +741,11 @@ public:
 		client->updateMe(head, left, right);
 		
 		players = &(client->players);
+		//isRendering = true;
 		for (std::vector<Player*>::iterator it = players->begin(); it < players->end(); it++) {
-			(*it)->draw(skyboxShader, projection, modelview, client->getClientId());
+			(*it)->draw(skyboxShader, projection, modelview, client->getClientId(), isRendering);
 		}
+		//isRendering = false;
 		table->Draw(shader, projection, modelview);
 		//gazebo->Draw(shader, projection, modelview);
 		red->Draw(shader, projection, modelview);
@@ -885,6 +894,10 @@ protected:
 	void renderScene(const glm::mat4 & projection, const glm::mat4 & headPose, mat4 head, mat4 left, mat4 right) override {
 		co2Scene->render(projection, glm::inverse(headPose), head, left, right);
 		
+	}
+
+	void updateRender(bool isRendering) {
+		co2Scene->isRendering = isRendering;
 	}
 };
 

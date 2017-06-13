@@ -12,14 +12,20 @@ class Player {
 		Player(int);
 		~Player();
 		int playerID;
-		void draw(GLuint shaderProgram, const glm::mat4 &projection, const glm::mat4 &modelview, int clientID);
+		void draw(GLuint shaderProgram, const glm::mat4 &projection, const glm::mat4 &modelview, int clientID, bool isRendering);
 		void update(glm::mat4 headmat, glm::mat4 left, glm::mat4 right);
-
-
+		void update();
+		bool isUpdating;
 	private:
 		SkyBox *head;
 		SkyBox *leftHand;
 		SkyBox *rightHand;
+
+		SkyBox *headNext;
+		SkyBox *leftHandNext;
+		SkyBox *rightHandNext;
+
+
 
 };
 

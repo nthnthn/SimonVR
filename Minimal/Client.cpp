@@ -8,9 +8,29 @@
 #define INIT_MSG 1
 #define UPDATE_MSG 0
 #define BTN_PRSS_MSG 2
+#define DEF_CLIENT_ID -1
+
+struct posMessage {
+	int id;
+	int msgType;
+	glm::mat4 head;
+	glm::mat4 left;
+	glm::mat4 right;
+};
+
+struct initMessage {
+	int id;
+	int msgType;
+};
+
+struct btnMessage {
+	int id;
+	int msgType;
+	int button;
+};
 
 Client::Client() {
-	clientID = 9;
+	clientID = DEF_CLIENT_ID;
 
 	/***********SOCKET STUFF *********************/
 
@@ -39,8 +59,8 @@ Client::Client() {
 
 	player = new Player(clientID);
 	addPlayer(player);
-	//testplayer = new Player(1);
-	//addPlayer(testplayer);
+	testplayer = new Player(1);
+	addPlayer(testplayer);
 
 	btnSequence = "";
 	_beginthread(recvMessages, 0, this);
@@ -51,38 +71,33 @@ Client::~Client() {
 }
 
 void Client::setId() {
-	while (clientID == 9) {
-		string init = to_string(clientID) + " " + to_string(INIT_MSG);
-		init += '\0';
-		int numBytesRcvd;
+	while (clientID == DEF_CLIENT_ID) {
+		initMessage msg;
+		msg.id = clientID;
+		msg.msgType = INIT_MSG;
+		
 		char buffer[DEF_BUFLEN + 1];
+		int numBytesRcvd;
 
 		struct sockaddr_storage fromAddr; // Source address of server
 										  // Set length of from address structure (in-out parameter)
 		socklen_t fromAddrLen = sizeof(fromAddr);
 
-		//memcpy(message, (char *)&init[0], btnSequence.length() * sizeof(char));
 		// Send the string to the server
-		int numBytes = sendto(sock, &init[0], strlen(&init[0]), 0,
+		int numBytes = sendto(sock, (char *)&msg, sizeof(initMessage), 0,
 			(struct sockaddr *)&server, sizeof(struct sockaddr_in));
 		if (numBytes < 0)
 			fprintf(stderr, "sendto() failed");
 
-		numBytesRcvd = recvfrom(getSock(), buffer, DEF_BUFLEN, 0,
+		numBytesRcvd = recvfrom(getSock(), buffer, sizeof(initMessage), 0,
 			(struct sockaddr *) &fromAddr, &fromAddrLen);
 
 		if (numBytesRcvd > 0) {
-			stringstream ss;
-			ss << buffer;
+			initMessage initMsg;
+			memcpy(&initMsg, buffer, sizeof(initMessage));
 
-			int playerID;
-			ss >> playerID;
-
-			int check;
-			ss >> check;
-
-			if (check == 1) {
-				clientID = playerID;
+			if (initMsg.msgType == 1) {
+				clientID = initMsg.id;
 			}
 		}
 		Sleep(1000);
@@ -105,13 +120,15 @@ void Client::addPlayer(Player * newPlayer) {
 
 void Client::updateMe(glm::mat4 head, glm::mat4 left, glm::mat4 right) {
 	player->update(head, left, right);
-	convertPlayerToString(head, left, right, message);
-	updateServer();
+	updateServer(head, left, right);
+	for (std::vector<Player*>::iterator it = (&players)->begin(); it < (&players)->end(); it++) {
+		(*it)->update();
+	}
 }
 
-void Client::updateServer() {
+void Client::updateServer(glm::mat4 head, glm::mat4 left, glm::mat4 right) {
 	if (waitCounter > WAIT_TIME) {
-		sendMessages();
+		sendMessages(head, left, right);
 		waitCounter = 0;
 	}
 	else {
@@ -120,29 +137,33 @@ void Client::updateServer() {
 
 }
 
-void Client::sendMessages() {
-	size_t strLen = strlen(message);
-	if (strLen > DEF_BUFLEN) // Check input length
-		fprintf(stderr, "string too long");
+void Client::sendMessages(glm::mat4 head, glm::mat4 left, glm::mat4 right) {
+
+	posMessage msg;
+
+	msg.id = clientID;
+	msg.msgType = UPDATE_MSG;
+	msg.head = head;
+	msg.left = left;
+	msg.right = right;
 
 	// Send the string to the server
-	int numBytes = sendto(sock, message, strLen, 0,
+	int numBytes = sendto(sock, (char *)&msg, sizeof(posMessage), 0,
 		(struct sockaddr *)&server, sizeof(struct sockaddr_in));
 	if (numBytes < 0)
 		fprintf(stderr, "sendto() failed");
-	else if (numBytes != (int)strLen)
-		fprintf(stderr, "sendto() error sent unexpected number of bytes");
 
+	/*
 	if (buttonHit) {
-		memcpy(message, &btnSequence[0], btnSequence.length() * sizeof(char));
+		memcpy(message, , btnSequence.length() * sizeof(char));
 		// Send the string to the server
-		int numBytes = sendto(sock, message, strLen, 0,
+		int numBytes = sendto(sock, message, sizeof(, 0,
 			(struct sockaddr *)&server, sizeof(struct sockaddr_in));
 		if (numBytes < 0)
 			fprintf(stderr, "sendto() failed");
 		else if (numBytes != (int)strLen)
 			fprintf(stderr, "sendto() error sent unexpected number of bytes");
-	}
+	}*/
 }
 
 void recvMessages(void *arg) {
@@ -158,9 +179,9 @@ void recvMessages(void *arg) {
 	// When numBytesRcvd == 0 that means 0 bytes were received, therefore
 	// no more messages
 	while(true) {
-		numBytesRcvd = recvfrom(client->getSock(), buffer, DEF_BUFLEN, 0,
+		numBytesRcvd = recvfrom(client->getSock(), buffer, sizeof(posMessage), 0,
 			(struct sockaddr *) &fromAddr, &fromAddrLen);
-		if (numBytesRcvd > 0) {
+		if (numBytesRcvd > 0 && numBytesRcvd == sizeof(posMessage)) {
 			//fprintf(stderr, "got message: %d\n", numBytesRcvd);
 			client->processMessage(&buffer[0]);
 		}
@@ -170,45 +191,33 @@ void recvMessages(void *arg) {
 }
 
 void Client::processMessage(char *buffer) {
-	//fputs(buffer, stdout);
-	stringstream ss;
-	ss << buffer;
+	initMessage temp;
+	memcpy(&temp, buffer, sizeof(initMessage));
 
-	int playerID;
-	ss >> playerID;
+	if (temp.msgType == INIT_MSG) {
 
-	int messageType;
-	ss >> messageType;
+	}
+	else if (temp.msgType == UPDATE_MSG) {
+		posMessage msg;
+		memcpy(&msg, buffer, sizeof(posMessage));
 
-	glm::mat4 headmat;
-	glm::mat4 leftmat;
-	glm::mat4 rightmat;
-	glm::mat4 *mat;
-	for (int i = 0; i < 3; i++) {
-		if (i == 0) {
-			mat = &headmat;
-		}
-		else if (i == 1) {
-			mat = &leftmat;
-		}
-		else {
-			mat = &rightmat;
-		}
-
-		for (int j = 0; j < 4; j++) {
-			for (int k = 0; k < 4; k++) {
-				ss >> (*mat)[j][k];
+		/*if (msg.id != clientID) {
+			for (std::vector<Player*>::iterator it = (&players)->begin(); it < (&players)->end(); it++) {
+				if ((*it)->playerID == msg.id) {
+					(*it)->update(msg.head, msg.left, msg.right);
+				}
 			}
+		}*/
+
+		if (msg.id == clientID) {
+			glm::mat4 head, left, right;
+
+			head = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * msg.head;
+			left = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * msg.left;
+			right = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * msg.right;
+			testplayer->update(head, left, right);
 		}
 	}
-
-	//for (std::vector<Player*>::iterator it; it = players.begin )
-	/*if (playerID == clientID) {
-		headmat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * headmat;
-		leftmat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * leftmat;
-		rightmat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * rightmat;
-		testplayer->update(headmat, leftmat, rightmat);
-	}*/
 }
 
 glm::mat4 Client::getLocalPosition() {
@@ -251,7 +260,8 @@ void Client::setAddrInfo(sockaddr_in *addr, bool isClient) {
 		addr->sin_addr.S_un.S_un_b.s_b1 = (unsigned char)128;
 		addr->sin_addr.S_un.S_un_b.s_b2 = (unsigned char)54;
 		addr->sin_addr.S_un.S_un_b.s_b3 = (unsigned char)70;
-		addr->sin_addr.S_un.S_un_b.s_b4 = (unsigned char)60;
+		addr->sin_addr.S_un.S_un_b.s_b4 = (unsigned char)62
+			;
 	}
 }
 
@@ -271,39 +281,13 @@ void Client::cleanUp(SOCKET sock) {
 }
 
 void Client::convertPlayerToString(glm::mat4 head, glm::mat4 left, glm::mat4 right, char* myStr) {
-	std::string str = to_string(clientID) + " 0 ";
-	glm::mat4 matrix;
-	for (int l = 0; l < 3; l++) {
-		switch (l) {
-		case 0:
-			matrix = head;
-			//str += "";
-			break;
-		case 1:
-			matrix = left;
-			str += " ";
-			break;
-		case 2:
-			matrix = right;
-			str += " ";
-			break;
-		default: break;
-		}
+	posMessage msg;
 
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				std::string num = std::to_string(matrix[i][j]);
-				for (int k = 0; k < 6; k++) {
-					str += num[k];
-				}
-				if (i != 3 || j != 3) {
-					str += " ";
-				}
-			}
-		}
-		//str += ",";
-	}
-	//str += "";
-	str += '\0';
-	memcpy(myStr, &str[0], str.length() * sizeof(char));
+	msg.id = clientID;
+	msg.msgType = 0;
+	msg.head = head;
+	msg.left = left;
+	msg.right = right;
+
+	memcpy(myStr, &msg, sizeof(posMessage));
 }

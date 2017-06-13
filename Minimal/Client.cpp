@@ -59,8 +59,8 @@ Client::Client() {
 
 	player = new Player(clientID);
 	addPlayer(player);
-	testplayer = new Player(1);
-	addPlayer(testplayer);
+	//testplayer = new Player(1);
+	//addPlayer(testplayer);
 
 	btnSequence = "";
 	_beginthread(recvMessages, 0, this);
@@ -201,22 +201,28 @@ void Client::processMessage(char *buffer) {
 		posMessage msg;
 		memcpy(&msg, buffer, sizeof(posMessage));
 
-		/*if (msg.id != clientID) {
+		if (msg.id != clientID) {
+			bool isUpdated = false;
 			for (std::vector<Player*>::iterator it = (&players)->begin(); it < (&players)->end(); it++) {
 				if ((*it)->playerID == msg.id) {
 					(*it)->update(msg.head, msg.left, msg.right);
+					isUpdated = true;
 				}
 			}
-		}*/
+			if (!isUpdated) {
+				Player *player = new Player(msg.id);
+				player->update(msg.head, msg.left, msg.right);
+			}
+		}
 
-		if (msg.id == clientID) {
+		/*if (msg.id == clientID) {
 			glm::mat4 head, left, right;
 
 			head = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * msg.head;
 			left = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * msg.left;
 			right = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * msg.right;
 			testplayer->update(head, left, right);
-		}
+		}*/
 	}
 }
 
@@ -280,14 +286,3 @@ void Client::cleanUp(SOCKET sock) {
 	exit(0);
 }
 
-void Client::convertPlayerToString(glm::mat4 head, glm::mat4 left, glm::mat4 right, char* myStr) {
-	posMessage msg;
-
-	msg.id = clientID;
-	msg.msgType = 0;
-	msg.head = head;
-	msg.left = left;
-	msg.right = right;
-
-	memcpy(myStr, &msg, sizeof(posMessage));
-}

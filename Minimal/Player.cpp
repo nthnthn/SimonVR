@@ -9,6 +9,7 @@ Player::Player(int id) {
 	leftHandNext = new SkyBox(1);
 	rightHandNext = new SkyBox(2);
 	isUpdating = false;
+	update(glm::mat4(1.0f), glm::mat4(1.0f), glm::mat4(1.0f));
 }
 
 Player::~Player() {}

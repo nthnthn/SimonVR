@@ -50,8 +50,6 @@ private:
 	SOCKET getSocket(int family, int type);
 	void setAddrInfo(sockaddr_in *addr, bool isClient);
 	void bindSocket(SOCKET sock, sockaddr_in *server);
-	void convertPlayerToString(glm::mat4 head, glm::mat4 left,
-		glm::mat4 right, char* myStr);
 	void updateServer(glm::mat4 head, glm::mat4 left, glm::mat4 right);
 	void sendMessages(glm::mat4 head, glm::mat4 left, glm::mat4 right);
 	void setId();

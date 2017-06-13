@@ -10,7 +10,7 @@
 #define BTN_PRSS_MSG 2
 
 Client::Client() {
-	clientID = 0;
+	clientID = 9;
 
 	/***********SOCKET STUFF *********************/
 
@@ -84,7 +84,7 @@ void Client::setId() {
 			ss >> check;
 
 			if (check == 1) {
-				clientID = playerID;
+				clientID = 0;
 			}
 		}
 		Sleep(1000);
@@ -173,7 +173,6 @@ void recvMessages(void *arg) {
 }
 
 void Client::processMessage(char *buffer) {
-	cerr << "DECODING MESSAGE\n";
 	//fputs(buffer, stdout);
 	stringstream ss;
 	ss << buffer;
@@ -190,6 +189,7 @@ void Client::processMessage(char *buffer) {
 		return;
 	}
 
+	cerr << "DECODING MESSAGE\n";
 	glm::mat4 headmat;
 	glm::mat4 leftmat;
 	glm::mat4 rightmat;

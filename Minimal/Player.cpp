@@ -17,6 +17,12 @@ Player::Player(int id) {
 
 Player::~Player() {}
 
+glm::mat4 Player::getHand(bool isLeft) {
+	if (isLeft) return leftHand->getToWorld();
+	else return rightHand->getToWorld();
+
+}
+
 void Player::draw(GLuint shaderProgram, const glm::mat4 &projection, const glm::mat4 &modelview, int clientID, bool isRendering) {
 	if (playerID != -1) {
 		isUpdating = true;

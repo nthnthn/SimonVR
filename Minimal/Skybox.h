@@ -22,6 +22,7 @@ public:
 	void update(glm::mat4 newToWorld);
 	GLfloat color[4];
 	void setColor(glm::vec4 newcolor);
+	glm::mat4 getToWorld();
 
 private:
 	GLuint textId;

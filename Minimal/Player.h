@@ -16,6 +16,7 @@ class Player {
 		void update(glm::mat4 headmat, glm::mat4 left, glm::mat4 right);
 		void update();
 		bool isUpdating;
+		glm::mat4 getHand(bool isLeft);
 	private:
 		SkyBox *head;
 		SkyBox *leftHand;

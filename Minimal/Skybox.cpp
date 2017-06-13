@@ -148,6 +148,10 @@ void SkyBox::draw(GLuint shaderProgram, const glm::mat4 &projection, const glm::
 	}
 }
 
+glm::mat4 SkyBox::getToWorld() {
+	return toWorld;
+}
+
 void SkyBox::drawColor(GLuint shaderProgram, const glm::mat4 &projection, const glm::mat4 &modelview)
 {
 	glUseProgram(shaderProgram);

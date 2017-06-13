@@ -672,7 +672,7 @@ private:
 	bool goingDown = false;
 	const float DISTANCE_FROM_BUTTON = 0.2f;
 	glm::vec4 buttonCenterOffset;
-	float buttonSpeed = 0.1f;
+	float buttonSpeed = 0.045f;
 	float buttonSpeedMultiplier = 1.0f;
 
 	//Sound
@@ -759,9 +759,11 @@ public:
 		skybox->draw(skyboxShader, projection, modelview);
 		colorBox->drawColor(colorShader, projection, modelview);
 
-		checkPressed(left, right);
-		if (pressed) {
-			handlePress(deltaTime);
+		for (std::vector<Player*>::iterator it = players->begin(); it < players->end(); it++) {
+			checkPressed((*it)->getHand(true), (*it)->getHand(false));
+			if (pressed) {
+				handlePress(deltaTime);
+			}
 		}
 
 	}

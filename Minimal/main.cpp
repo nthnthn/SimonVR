@@ -726,9 +726,9 @@ public:
 		yellow->translate(glm::vec3(0.1f, -0.8f, 0.25f));
 
 		// Load and move the gazebo
-		//gazebo = new Model("../Minimal/Assets/Gazebo/Gazebo.obj");	
-		//gazebo->translate(glm::vec3(.0f, -1.9f, .0f));
-		//gazebo->scale(0.011f);
+		gazebo = new Model("../Minimal/Assets/Gazebo/Gazebo.obj");	
+		gazebo->translate(glm::vec3(.0f, -1.9f, .0f));
+		gazebo->scale(0.011f);
 
 		//Skybox
 		skybox = new SkyBox(3);
@@ -747,7 +747,7 @@ public:
 		}
 		//isRendering = false;
 		table->Draw(shader, projection, modelview);
-		//gazebo->Draw(shader, projection, modelview);
+		gazebo->Draw(shader, projection, modelview);
 		red->Draw(shader, projection, modelview);
 		blue->Draw(shader, projection, modelview);
 		yellow->Draw(shader, projection, modelview);
